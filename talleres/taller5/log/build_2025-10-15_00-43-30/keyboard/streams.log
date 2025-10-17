@@ -1,0 +1,29 @@
+[0.021s] Invoking command in '/root/ros2_ws/src/robotica/build/keyboard': AMENT_PREFIX_PATH=/root/ros2_ws/src/robotica/install/keyboard_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/root/ros2_ws/src/robotica/install/keyboard_msgs:/root/ros2_ws/install/sim_ros2_interface:/opt/ros/humble LD_LIBRARY_PATH=/root/ros2_ws/src/robotica/install/keyboard_msgs/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins PYTHONPATH=/root/ros2_ws/src/robotica/install/keyboard_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /root/ros2_ws/src/robotica/build/keyboard -- -j12 -l12
+[0.114s] [35m[1mConsolidate compiler generated dependencies of target keyboard[0m
+[0.150s] [ 50%] [32mBuilding CXX object CMakeFiles/keyboard.dir/src/keyboard.cpp.o[0m
+[4.092s] [100%] [32m[1mLinking CXX executable keyboard[0m
+[4.408s] [100%] Built target keyboard
+[4.424s] Invoked command in '/root/ros2_ws/src/robotica/build/keyboard' returned '0': AMENT_PREFIX_PATH=/root/ros2_ws/src/robotica/install/keyboard_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/root/ros2_ws/src/robotica/install/keyboard_msgs:/root/ros2_ws/install/sim_ros2_interface:/opt/ros/humble LD_LIBRARY_PATH=/root/ros2_ws/src/robotica/install/keyboard_msgs/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins PYTHONPATH=/root/ros2_ws/src/robotica/install/keyboard_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --build /root/ros2_ws/src/robotica/build/keyboard -- -j12 -l12
+[4.427s] Invoking command in '/root/ros2_ws/src/robotica/build/keyboard': AMENT_PREFIX_PATH=/root/ros2_ws/src/robotica/install/keyboard_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/root/ros2_ws/src/robotica/install/keyboard_msgs:/root/ros2_ws/install/sim_ros2_interface:/opt/ros/humble LD_LIBRARY_PATH=/root/ros2_ws/src/robotica/install/keyboard_msgs/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins PYTHONPATH=/root/ros2_ws/src/robotica/install/keyboard_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /root/ros2_ws/src/robotica/build/keyboard
+[4.441s] -- Install configuration: "Release"
+[4.441s] -- Installing: /root/ros2_ws/src/robotica/install/keyboard/lib/keyboard/keyboard
+[4.442s] -- Set runtime path of "/root/ros2_ws/src/robotica/install/keyboard/lib/keyboard/keyboard" to ""
+[4.442s] -- Up-to-date: /root/ros2_ws/src/robotica/install/keyboard/lib/keyboard/keyboard_to_joy.py
+[4.443s] -- Up-to-date: /root/ros2_ws/src/robotica/install/keyboard/share/keyboard/config
+[4.443s] -- Up-to-date: /root/ros2_ws/src/robotica/install/keyboard/share/keyboard/config/example_config.yaml
+[4.443s] -- Up-to-date: /root/ros2_ws/src/robotica/install/keyboard/share/ament_index/resource_index/package_run_dependencies/keyboard
+[4.443s] -- Up-to-date: /root/ros2_ws/src/robotica/install/keyboard/share/ament_index/resource_index/parent_prefix_path/keyboard
+[4.443s] -- Up-to-date: /root/ros2_ws/src/robotica/install/keyboard/share/keyboard/environment/ament_prefix_path.sh
+[4.443s] -- Up-to-date: /root/ros2_ws/src/robotica/install/keyboard/share/keyboard/environment/ament_prefix_path.dsv
+[4.443s] -- Up-to-date: /root/ros2_ws/src/robotica/install/keyboard/share/keyboard/environment/path.sh
+[4.444s] -- Up-to-date: /root/ros2_ws/src/robotica/install/keyboard/share/keyboard/environment/path.dsv
+[4.444s] -- Up-to-date: /root/ros2_ws/src/robotica/install/keyboard/share/keyboard/local_setup.bash
+[4.444s] -- Up-to-date: /root/ros2_ws/src/robotica/install/keyboard/share/keyboard/local_setup.sh
+[4.444s] -- Up-to-date: /root/ros2_ws/src/robotica/install/keyboard/share/keyboard/local_setup.zsh
+[4.444s] -- Up-to-date: /root/ros2_ws/src/robotica/install/keyboard/share/keyboard/local_setup.dsv
+[4.444s] -- Installing: /root/ros2_ws/src/robotica/install/keyboard/share/keyboard/package.dsv
+[4.444s] -- Up-to-date: /root/ros2_ws/src/robotica/install/keyboard/share/ament_index/resource_index/packages/keyboard
+[4.444s] -- Up-to-date: /root/ros2_ws/src/robotica/install/keyboard/share/keyboard/cmake/keyboardConfig.cmake
+[4.444s] -- Up-to-date: /root/ros2_ws/src/robotica/install/keyboard/share/keyboard/cmake/keyboardConfig-version.cmake
+[4.444s] -- Up-to-date: /root/ros2_ws/src/robotica/install/keyboard/share/keyboard/package.xml
+[4.447s] Invoked command in '/root/ros2_ws/src/robotica/build/keyboard' returned '0': AMENT_PREFIX_PATH=/root/ros2_ws/src/robotica/install/keyboard_msgs:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/root/ros2_ws/src/robotica/install/keyboard_msgs:/root/ros2_ws/install/sim_ros2_interface:/opt/ros/humble LD_LIBRARY_PATH=/root/ros2_ws/src/robotica/install/keyboard_msgs/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins PYTHONPATH=/root/ros2_ws/src/robotica/install/keyboard_msgs/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/cmake --install /root/ros2_ws/src/robotica/build/keyboard

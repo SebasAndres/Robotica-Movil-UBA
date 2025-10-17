@@ -1,0 +1,16 @@
+/root/ros2_ws/src/robotica/install/ros_intro/lib/ros_intro/keys_to_twist
+/root/ros2_ws/src/robotica/install/ros_intro/share/ament_index/resource_index/package_run_dependencies/ros_intro
+/root/ros2_ws/src/robotica/install/ros_intro/share/ament_index/resource_index/parent_prefix_path/ros_intro
+/root/ros2_ws/src/robotica/install/ros_intro/share/ros_intro/environment/ament_prefix_path.sh
+/root/ros2_ws/src/robotica/install/ros_intro/share/ros_intro/environment/ament_prefix_path.dsv
+/root/ros2_ws/src/robotica/install/ros_intro/share/ros_intro/environment/path.sh
+/root/ros2_ws/src/robotica/install/ros_intro/share/ros_intro/environment/path.dsv
+/root/ros2_ws/src/robotica/install/ros_intro/share/ros_intro/local_setup.bash
+/root/ros2_ws/src/robotica/install/ros_intro/share/ros_intro/local_setup.sh
+/root/ros2_ws/src/robotica/install/ros_intro/share/ros_intro/local_setup.zsh
+/root/ros2_ws/src/robotica/install/ros_intro/share/ros_intro/local_setup.dsv
+/root/ros2_ws/src/robotica/install/ros_intro/share/ros_intro/package.dsv
+/root/ros2_ws/src/robotica/install/ros_intro/share/ament_index/resource_index/packages/ros_intro
+/root/ros2_ws/src/robotica/install/ros_intro/share/ros_intro/cmake/ros_introConfig.cmake
+/root/ros2_ws/src/robotica/install/ros_intro/share/ros_intro/cmake/ros_introConfig-version.cmake
+/root/ros2_ws/src/robotica/install/ros_intro/share/ros_intro/package.xml

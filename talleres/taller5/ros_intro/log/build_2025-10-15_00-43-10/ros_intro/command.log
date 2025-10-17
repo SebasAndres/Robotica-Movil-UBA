@@ -1,0 +1,2 @@
+Invoking command in '/root/ros2_ws/src/robotica/ros_intro/build/ros_intro': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /root/ros2_ws/src/robotica/ros_intro -DCMAKE_INSTALL_PREFIX=/root/ros2_ws/src/robotica/ros_intro/install/ros_intro
+Invoked command in '/root/ros2_ws/src/robotica/ros_intro/build/ros_intro' returned '1': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/humble /usr/bin/cmake /root/ros2_ws/src/robotica/ros_intro -DCMAKE_INSTALL_PREFIX=/root/ros2_ws/src/robotica/ros_intro/install/ros_intro

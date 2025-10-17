@@ -4,6 +4,7 @@ Observación:
   que funcione.
 */
 
+
 #define triggPin 6
 #define echoPin 2
 

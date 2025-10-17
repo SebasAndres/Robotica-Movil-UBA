@@ -1,0 +1,10 @@
+/root/ros2_ws/src/robotica/build/keyboard/CMakeFiles/uninstall.dir
+/root/ros2_ws/src/robotica/build/keyboard/CMakeFiles/keyboard_uninstall.dir
+/root/ros2_ws/src/robotica/build/keyboard/CMakeFiles/keyboard.dir
+/root/ros2_ws/src/robotica/build/keyboard/CMakeFiles/test.dir
+/root/ros2_ws/src/robotica/build/keyboard/CMakeFiles/edit_cache.dir
+/root/ros2_ws/src/robotica/build/keyboard/CMakeFiles/rebuild_cache.dir
+/root/ros2_ws/src/robotica/build/keyboard/CMakeFiles/list_install_components.dir
+/root/ros2_ws/src/robotica/build/keyboard/CMakeFiles/install.dir
+/root/ros2_ws/src/robotica/build/keyboard/CMakeFiles/install/local.dir
+/root/ros2_ws/src/robotica/build/keyboard/CMakeFiles/install/strip.dir
