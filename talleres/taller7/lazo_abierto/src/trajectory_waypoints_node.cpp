@@ -28,9 +28,13 @@ std::vector<waypoint> planBox()
 int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
+  rclcpp::QoS qos_profile(rclcpp::KeepLast(1));
+  qos_profile.reliable();
+  qos_profile.transient_local();
+
   auto trajectory_waypoints_node = rclcpp::Node::make_shared("trajectory_waypoints");
   
-  trajectory_publisher = this->create_publisher<trajectory_msgs::msg::JointTrajectory>("/robot/trajectory", rclcpp::QoS(10));
+  trajectory_publisher = this->create_publisher<trajectory_msgs::msg::JointTrajectory>("/robot/trajectory", qos_profile);
 
   // Path descripto en poses para visualizacion en RViz
 
@@ -64,7 +68,7 @@ int main(int argc, char** argv)
     trajectory_msg.points.push_back( point_msg );
   }
 
-  trajectory_publisher->publish( trajectory_msg );
+  //trajectory_publisher->publish( trajectory_msg );
 
   rclcpp::spin(trajectory_waypoints_node);
   rclcpp::shutdown();

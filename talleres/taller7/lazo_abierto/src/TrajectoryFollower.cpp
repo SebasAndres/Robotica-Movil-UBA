@@ -3,9 +3,13 @@
 
 TrajectoryFollower::TrajectoryFollower() : Node("nodeTrajectoryFollower")
 {
+  rclcpp::QoS qos_profile(rclcpp::KeepLast(10));
+  qos_profile.reliable();
+  qos_profile.transient_local();
+
   cmd_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("/cmd_vel", rclcpp::QoS(10));
 
-  trajectory_sub_ = this->create_subscription<robmovil_msgs::msg::Trajectory>("/robot/trajectory", rclcpp::QoS(10), std::bind(&TrajectoryFollower::handleNewTrajectory, this, std::placeholders::_1));
+  trajectory_sub_ = this->create_subscription<robmovil_msgs::msg::Trajectory>("/robot/trajectory", qos_profile, std::bind(&TrajectoryFollower::handleNewTrajectory, this, std::placeholders::_1));
 }
 
 void TrajectoryFollower::handleNewTrajectory(const robmovil_msgs::msg::Trajectory& trajectory_msg)

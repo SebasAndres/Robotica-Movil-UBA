@@ -3,12 +3,20 @@
 FeedForwardController::FeedForwardController() : TrajectoryFollower()
 {}
 
-double lineal_interp(const rclcpp::Time& t0, const rclcpp::Time& t1, double v0, double v1, const rclcpp::Time& t)
+double lineal_interp(
+  const rclcpp::Time& t0, 
+  const rclcpp::Time& t1, 
+  double v0, 
+  double v1, 
+  const rclcpp::Time& t
+)
 {
   /** COMPLETAR: esta funcion debe interpolar entre las velocidades requeridas.
    * entre v0 y v1 dependiendo el tiempo trancurrido entre ambos
    * considerar que t siempre se encuentra en t0 y t1. */
-  return v0;
+
+  return v0 + ((t-t0).seconds() / (t1-t0).seconds())*(v1-v0);
+  //  return v0;
 }
 
 bool FeedForwardController::control(const rclcpp::Time& t, double& v, double& w)
@@ -56,8 +64,8 @@ bool FeedForwardController::control(const rclcpp::Time& t, double& v, double& w)
 
   /** COMPLETAR: Evaluar las velocidades lineales y angulares resultantes para publicar
    * como comandos de velocidad. */
-  v = 0;
-  w = 0;
+  v = sqrt(pow(vx,2)+pow(vy,2));
+  w = va;
     
   return true;
 }

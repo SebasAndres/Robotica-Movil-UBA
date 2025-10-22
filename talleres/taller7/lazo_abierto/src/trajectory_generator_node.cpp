@@ -16,9 +16,13 @@ void build_spline_trajectory(double, std::vector<std::vector<double>>&, robmovil
 int main(int argc, char** argv)
 {
   rclcpp::init(argc, argv);
+  rclcpp::QoS qos_profile(rclcpp::KeepLast(1));
+  qos_profile.reliable();
+  qos_profile.transient_local();
+
   auto trajectory_generator_node = rclcpp::Node::make_shared("trajectory_generator");
 
-  auto trajectory_publisher = trajectory_generator_node->create_publisher<robmovil_msgs::msg::Trajectory>("/robot/trajectory", rclcpp::QoS(10));
+  auto trajectory_publisher = trajectory_generator_node->create_publisher<robmovil_msgs::msg::Trajectory>("/robot/trajectory", qos_profile);
 
   // Path descripto en poses para visualizacion en RViz
   auto path_publisher = trajectory_generator_node->create_publisher<nav_msgs::msg::Path>("/ground_truth/target_path", rclcpp::QoS(10));
@@ -157,7 +161,12 @@ void build_sin_trajectory(double stepping, double total_time, double amplitude, 
   }
 }
 
-void build_spline_trajectory(double stepping, std::vector<std::vector<double>>& wpoints, robmovil_msgs::msg::Trajectory& trajectory_msg, nav_msgs::msg::Path& path_msg)
+void build_spline_trajectory(
+  double stepping, 
+  std::vector<std::vector<double>>& wpoints, 
+  robmovil_msgs::msg::Trajectory& trajectory_msg, 
+  nav_msgs::msg::Path& path_msg
+)
 {
 	
 	// number of points in the trajectory
@@ -172,15 +181,17 @@ void build_spline_trajectory(double stepping, std::vector<std::vector<double>>& 
     
     double xa = wpoints [n_point][1];
     double ya = wpoints [n_point][2];
-    double thetaa = wpoints [n_point][3];
+    double thetaa = wpoints [n_point][3];    
+
     double xb = wpoints [n_point + 1][1];
     double yb = wpoints [n_point + 1][2];
     double thetab = wpoints [n_point + 1][3];
-    
+
     /*std::cout << "xa " << xa << " ya " << ya << " thetaa " << thetaa  << std::endl;
     std::cout << "xb " << xb << " yb " << yb << " thetab " << thetab  << std::endl;
     std::cout << "tin " << initial_time << " tfin " << final_time << std::endl;
-*/
+    */
+    
     // curvature parameters
     double n1 = 5;
     double n2 = 5;
@@ -188,14 +199,15 @@ void build_spline_trajectory(double stepping, std::vector<std::vector<double>>& 
     // polynomial parameters
 
     /* COMPLETAR LOS PARÁMETROS DE LOS POLINOMIOS */
-    double a0 = 0;
-    double a1 = 0;
-    double a2 = 0;
-    double a3 = 0;
-    double b0 = 0;
-    double b1 = 0;
-    double b2 = 0;
-    double b3 = 0;
+    double a0 = xa;
+    double a1 = n1 * cos(thetaa);
+    double a2 = 3*(xb-xa)-2*n1*cos(thetaa)-n2*cos(thetab);
+    double a3 = -2*(xb-xa)+n1*cos(thetaa)+n2*cos(thetab);
+
+    double b0 = ya;
+    double b1 = n1*sin(thetaa);
+    double b2 = 3*(yb-ya)-2*n1*sin(thetaa)-n2*sin(thetab);
+    double b3 = -2*(yb-ya)+n1*sin(thetaa)+n2*sin(thetab);
     
     //std::cout << "a0 " << a0 << " a1 " << a1 << " a2 " << a2 << " a3 " << a3 << std::endl;
     //std::cout << "b0 " << b0 << " b1 " << b1 << " b2 " << b2 << " b3 " << b3 << std::endl;

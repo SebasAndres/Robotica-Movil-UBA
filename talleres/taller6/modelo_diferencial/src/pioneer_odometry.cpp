@@ -30,8 +30,8 @@ void PioneerOdometry::on_velocity_cmd(const geometry_msgs::msg::Twist::SharedPtr
 {
   /** Completar los mensajes de velocidad vLeft y vRight*/
   double b = WHEEL_BASELINE / 2.0;
-  double vLeft = (twist->linear.x + twist->angular.z * b) / WHEEL_RADIUS; 
-  double vRight = (twist->linear.x - twist->angular.z * b) / WHEEL_RADIUS;  
+  double vLeft = (twist->linear.x - twist->angular.z * b) / WHEEL_RADIUS; 
+  double vRight = (twist->linear.x + twist->angular.z * b) / WHEEL_RADIUS;  
   
   // publish left velocity
   {
@@ -74,19 +74,15 @@ void PioneerOdometry::on_encoder_ticks(const robmovil_msgs::msg::EncoderTicks::S
   double delta_t = (current_time - last_ticks_time).seconds();
 
   /** Utilizar variables globales x_, y_, theta_ definidas en el .h */
-  const double DIST_PER_TICK = (2.0 * M_PI * WHEEL_RADIUS) / ENCODER_TICKS;
+  double d_der = delta_ticks_right * 2.0 * M_PI * WHEEL_RADIUS / ENCODER_TICKS;
+  double d_izq = delta_ticks_left * 2.0 * M_PI * WHEEL_RADIUS / ENCODER_TICKS;
 
-  double d_der = DIST_PER_TICK * delta_ticks_right;
-  double d_izq = DIST_PER_TICK * delta_ticks_left;
-  double delta_d = (d_der + d_izq) / 2; 
+  double delta_distance = (d_der + d_izq) / 2; 
   double delta_theta = (d_der - d_izq) / WHEEL_BASELINE;
 
-  x_ += delta_d * cos(theta_);
-  y_ += delta_d * sin(theta_);
+  x_ += delta_distance * cos(theta_);
+  y_ += delta_distance * sin(theta_);
   theta_ += delta_theta;
-
-  double v_linear = delta_d / delta_t;
-  double v_angular = delta_theta / delta_t;
 
   // Construir el mensaje odometry utilizando el esqueleto siguiente:
   nav_msgs::msg::Odometry msg;
@@ -103,13 +99,13 @@ void PioneerOdometry::on_encoder_ticks(const robmovil_msgs::msg::EncoderTicks::S
   q.setRPY(0, 0, theta_);  // roll, pitch, yaw
   msg.pose.pose.orientation = tf2::toMsg(q);
 
-  msg.twist.twist.linear.x = v_linear;
+  msg.twist.twist.linear.x = delta_distance / delta_t;
   msg.twist.twist.linear.y = 0;
   msg.twist.twist.linear.z = 0;
 
   msg.twist.twist.angular.x = 0;
   msg.twist.twist.angular.y = 0;
-  msg.twist.twist.angular.z = v_angular;
+  msg.twist.twist.angular.z = delta_theta / delta_t;
 
   pub_odometry_->publish( msg );
 
@@ -122,7 +118,7 @@ void PioneerOdometry::on_encoder_ticks(const robmovil_msgs::msg::EncoderTicks::S
   /* Mando tambien un transform usando TF */
 
   geometry_msgs::msg::TransformStamped t;
-  t.header.stamp = encoder->header.stamp; // this->get_clock()->now();
+  t.header.stamp = this->get_clock()->now();
   t.header.frame_id = "map";
   t.child_frame_id = "base_link";
   t.transform.translation.x = msg.pose.pose.position.x;
@@ -130,7 +126,7 @@ void PioneerOdometry::on_encoder_ticks(const robmovil_msgs::msg::EncoderTicks::S
   t.transform.translation.z = msg.pose.pose.position.z;
   t.transform.rotation = msg.pose.pose.orientation;
 
-  printf("x: %f y: %f v_linear: %f v_angular: %f\n", x_, y_, v_linear, v_angular);
+  // printf("x: %f y: %f v_linear: %f v_angular: %f\n", x_, y_, v_linear, v_angular);
 
   tf_broadcaster_->sendTransform(t);
 
