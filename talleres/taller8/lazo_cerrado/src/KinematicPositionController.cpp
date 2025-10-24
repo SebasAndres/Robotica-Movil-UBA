@@ -55,7 +55,11 @@ void KinematicPositionController::getCurrentPoseFromOdometry(const nav_msgs::msg
 #define K_ALPHA 1.5
 #define K_BETA -0.5
 
-bool KinematicPositionController::control(const rclcpp::Time& t, double& v, double& w)
+bool KinematicPositionController::control(
+  const rclcpp::Time& t, 
+  double& v, 
+  double& w
+)
 {
   // Se obtiene la pose actual publicada por la odometria
   double current_x, current_y, current_a;
@@ -73,9 +77,9 @@ bool KinematicPositionController::control(const rclcpp::Time& t, double& v, doub
    *  
    *  RECORDAR: cambiar el marco de referencia en que se encuentran dx, dy y theta */
 
-  double dx = 0;
-  double dy = 0;
-  double theta = 0;
+  double dx = goal_x - current_x;
+  double dy = goal_y - current_y;
+  double theta = goal_a - current_a;
   
   // Computar variables del sistema de control
   double rho = 0;
@@ -86,8 +90,7 @@ bool KinematicPositionController::control(const rclcpp::Time& t, double& v, doub
    * Existen constantes definidas al comienzo del archivo para
    * K_RHO, K_ALPHA, K_BETA */
   v = 0;
-  w = 0;
-  
+  w = 0;  
 
   RCLCPP_INFO(this->get_logger(), "atan2: %.2f, theta siegwart: %.2f, expected_atheta: %.2f, rho: %.2f, alpha: %.2f, beta: %.2f, v: %.2f, w: %.2f",
             atan2(dy, dx), theta, current_a, rho, alpha, beta, v, w);
