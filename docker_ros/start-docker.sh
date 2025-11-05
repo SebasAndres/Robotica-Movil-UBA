@@ -57,6 +57,7 @@ start(){
   xhost +local:docker
   
   # 2. Basic X11/Qt Variables
+  # 2. Basic X11/Qt Variables
   X_VARS="-e DISPLAY=$DISPLAY -e QT_X11_NO_MITSHM=1 -v /tmp/.X11-unix:/tmp/.X11-unix:rw"
   
   # 3. Wayland Variables (Using the /run/user/$UID/ directory)

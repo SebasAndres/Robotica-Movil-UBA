@@ -13,6 +13,7 @@ def generate_launch_description():
             parameters=[{'use_sim_time': True}]
         ),
 
+        ## FIXED GOAL
         Node(
             package="lazo_cerrado",
             executable="trajectory_follower_cl",
@@ -20,12 +21,24 @@ def generate_launch_description():
             output="screen",
             parameters=[
                 {'use_sim_time': True},
-                {"goal_selection": "PURSUIT_BASED"}, #FIXED_GOAL, TIME_BASED, PURSUIT_BASED
+                {"goal_selection": "FIXED_GOAL"}, #FIXED_GOAL, TIME_BASED, PURSUIT_BASED
                 {"fixed_goal_x": float(2.0)},
                 {"fixed_goal_y": float(2.0)},
                 {"fixed_goal_a": float(-0.785)}, # -1/2 * PI
             ],
         ),
+
+        ## TIME BASED
+        # Node(
+        #     package="lazo_cerrado",
+        #     executable="trajectory_follower_cl",
+        #     name="trajectory_follower_cl",
+        #     output="screen",
+        #     parameters=[
+        #         {'use_sim_time': True},
+        #         {"goal_selection": "TIME_BASED"}, 
+        #     ],
+        # ),
 
         Node(
             package="lazo_abierto",

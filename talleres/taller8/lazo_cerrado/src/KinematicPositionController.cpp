@@ -1,6 +1,8 @@
 #include <angles/angles.h>
 #include "KinematicPositionController.h"
 
+#define LOOKAHEAD_DISTANCE 0.5
+
 KinematicPositionController::KinematicPositionController() :
   TrajectoryFollower(), tfBuffer_(this->get_clock()),transform_listener_( tfBuffer_ )
 {
@@ -47,12 +49,10 @@ void KinematicPositionController::getCurrentPoseFromOdometry(const nav_msgs::msg
 
 /**
  * NOTA: Para un sistema estable mantener:
- * - 0 < K_RHO
- * - K_RHO < K_ALPHA
- * - K_BETA < 0
+ * - K_BETA < 0 < K_RHO < K_ALPHA
  */
-#define K_RHO 1
-#define K_ALPHA 1.5
+#define K_RHO 1 
+#define K_ALPHA 1.5  // + Rotación sobre el eje
 #define K_BETA -0.5
 
 bool KinematicPositionController::control(
@@ -80,20 +80,30 @@ bool KinematicPositionController::control(
   double dx = goal_x - current_x;
   double dy = goal_y - current_y;
   double theta = goal_a - current_a;
-  
-  // Computar variables del sistema de control
-  double rho = 0;
-  double alpha = angles::normalize_angle(0); // Normalizes the angle to be -M_PI circle to +M_PI circle It takes and returns radians. 
-  double beta =  angles::normalize_angle(0); // Realizar el calculo dentro del metodo de normalizacion
 
-  /* Calcular velocidad lineal y angular* 
+  double theta_I = -theta;
+  dx = cos(theta_I)*dx + sin(theta_I)*dy;
+  dy = -sin(theta_I)*dx + cos(theta_I)*dy;
+
+  // Computar variables del sistema de control
+  double rho = sqrt(pow(dx,2)+pow(dy,2));
+  double alpha = angles::normalize_angle(
+    atan2(dy, dx) - theta_I
+  ); // Normalizes the angle to be -M_PI circle to +M_PI circle It takes and returns radians. 
+  double beta =  angles::normalize_angle(
+    - theta_I - alpha
+  ); // Realizar el calculo dentro del metodo de normalizacion
+
+  /* dx
+  Calcular velocidad lineal y angular* 
    * Existen constantes definidas al comienzo del archivo para
    * K_RHO, K_ALPHA, K_BETA */
-  v = 0;
-  w = 0;  
+  v = K_RHO * rho;
+  w = K_ALPHA * alpha + K_BETA * beta;  
 
-  RCLCPP_INFO(this->get_logger(), "atan2: %.2f, theta siegwart: %.2f, expected_atheta: %.2f, rho: %.2f, alpha: %.2f, beta: %.2f, v: %.2f, w: %.2f",
-            atan2(dy, dx), theta, current_a, rho, alpha, beta, v, w);
+  RCLCPP_INFO(
+    this->get_logger(), "atan2: %.2f, theta siegwart: %.2f, expected_atheta: %.2f, rho: %.2f, alpha: %.2f, beta: %.2f, v: %.2f, w: %.2f",
+    atan2(dy, dx), theta, current_a, rho, alpha, beta, v, w);
 
   RCLCPP_INFO(this->get_logger(), "goal_x: %.2f, goal_y: %.2f, goal_a: %.2f, current_x: %.2f, current_y: %.2f, current_a: %.2f",
             goal_x, goal_y, goal_a, current_x, current_y, current_a);
@@ -105,8 +115,12 @@ bool KinematicPositionController::control(
 double dist2(double x0, double y0, double x1, double y1)
 { return sqrt((x1-x0)*(x1-x0) + (y1-y0)*(y1-y0));}
 
-bool KinematicPositionController::getPursuitBasedGoal(const rclcpp::Time& t, double& x, double& y, double& a)
-{
+bool KinematicPositionController::getPursuitBasedGoal(
+  const rclcpp::Time& t, 
+  double& x, 
+  double& y, 
+  double& a
+){
   // Los obtienen los valores de la posicion y orientacion actual.
   double current_x, current_y, current_a;
   current_x = this->x; current_y = this->y; current_a = this->a;
@@ -119,22 +133,59 @@ bool KinematicPositionController::getPursuitBasedGoal(const rclcpp::Time& t, dou
    * y luego buscar el primer waypoint que se encuentre a una distancia predefinida de lookahead en x,y */
   
   /* NOTA: De esta manera les es posible recorrer la trayectoria requerida */  
-  for(unsigned int i = 0; i < trajectory.points.size(); i++)
+
+  double min_dist = float('inf');
+  double closest_wx, closest_wy;
+  int nearest_wavepoint_index;
+  int num_wavepoints_in_trajectory = trajectory.points.size();
+
+  // Encuentro el punto de la trayectoria más cercano a la posición actual
+  for(unsigned int i = 0; i < num_wavepoints_in_trajectory; i++)
   {
-    // Recorren cada waypoint definido
     const robmovil_msgs::msg::TrajectoryPoint& wpoint = trajectory.points[i];
-    
-    // Y de esta manera puede acceder a la informacion de la posicion y orientacion requerida en el waypoint
     double wpoint_x = wpoint.transform.translation.x;
     double wpoint_y = wpoint.transform.translation.y;
     double wpoint_a = tf2::getYaw(wpoint.transform.rotation);
     
-    //...
-    
+    double curr_wavepoint_dist = dist2(current_x, current_y, wpoint_x, wpoint_y);
+    if (curr_wavepoint_dist < min_dist){
+      closest_wx = wpoint_x;
+      closest_wy = wpoint_y;
+      min_dist = curr_wavepoint_dist;
+      nearest_wavepoint_index = i;
+    }
+
+    // Podría haber una lógica de corte si siguen alejandose los puntos siguientes
   }
-  const robmovil_msgs::msg::TrajectoryPoint& last_wpoint = trajectory.points.back(); 
-  
-  
+
+  // Obtenemos el goal_point como el siguiente de el más cercano de atrás
+  int index_goal_point = nearest_wavepoint_index+1;
+  double goal_x = trajectory.points[index_goal_point].transform.translation.x;
+  double goal_y = trajectory.points[index_goal_point].transform.translation.y;
+  double goal_a = tf2::getYaw(trajectory.points[index_goal_point].transform.rotation);
+  while (
+    index_goal_point < num_wavepoints_in_trajectory
+    && dist2(current_x, current_y, goal_x, goal_y) < LOOKAHEAD_DISTANCE
+  ){
+    index_goal_point++;
+    goal_x = trajectory.points[index_goal_point].transform.translation.x;
+    goal_y = trajectory.points[index_goal_point].transform.translation.y;
+    goal_a = trajectory.points[index_goal_point].transform.rotation;
+  }
+
+  // Si no hay un punto adelante en la trayectoria posterior al lookahead 
+  // --> Voy al último punto
+  if (index_goal_point == num_wavepoints_in_trajectory){
+    goal_x = trajectory.points[index_goal_point-1].transform.translation.x;
+    goal_y = trajectory.points[index_goal_point-1].transform.translation.y;
+    goal_a = trajectory.points[index_goal_point].transform.rotation;
+  }
+
+  // Devuelvo en los parámetros pasados por referencia los GOAL x, GOAL y, A
+  x = goal_x;
+  y = goal_y;
+  a = goal_a;
+
   /* retorna true si es posible definir un goal, false si se termino la trayectoria y no quedan goals. */
   return true;
 }
