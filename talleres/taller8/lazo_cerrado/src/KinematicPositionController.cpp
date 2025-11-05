@@ -170,7 +170,7 @@ bool KinematicPositionController::getPursuitBasedGoal(
     index_goal_point++;
     goal_x = trajectory.points[index_goal_point].transform.translation.x;
     goal_y = trajectory.points[index_goal_point].transform.translation.y;
-    goal_a = trajectory.points[index_goal_point].transform.rotation;
+    goal_a = tf2::getYaw(trajectory.points[index_goal_point].transform.rotation);
   }
 
   // Si no hay un punto adelante en la trayectoria posterior al lookahead 
@@ -178,7 +178,7 @@ bool KinematicPositionController::getPursuitBasedGoal(
   if (index_goal_point == num_wavepoints_in_trajectory){
     goal_x = trajectory.points[index_goal_point-1].transform.translation.x;
     goal_y = trajectory.points[index_goal_point-1].transform.translation.y;
-    goal_a = trajectory.points[index_goal_point].transform.rotation;
+    goal_a = tf2::getYaw(trajectory.points[index_goal_point].transform.rotation);
   }
 
   // Devuelvo en los parámetros pasados por referencia los GOAL x, GOAL y, A
