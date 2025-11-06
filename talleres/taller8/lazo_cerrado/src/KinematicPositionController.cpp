@@ -77,10 +77,12 @@ bool KinematicPositionController::control(
    *  
    *  RECORDAR: cambiar el marco de referencia en que se encuentran dx, dy y theta */
 
+  // Marco de referencia robot
   double dx = goal_x - current_x;
   double dy = goal_y - current_y;
   double theta = goal_a - current_a;
 
+  // Marco de referencia inercial
   double theta_I = -theta;
   dx = cos(theta_I)*dx + sin(theta_I)*dy;
   dy = -sin(theta_I)*dx + cos(theta_I)*dy;
@@ -134,7 +136,7 @@ bool KinematicPositionController::getPursuitBasedGoal(
   
   /* NOTA: De esta manera les es posible recorrer la trayectoria requerida */  
 
-  double min_dist = float('inf');
+  double min_dist = 10000000;
   double closest_wx, closest_wy;
   int nearest_wavepoint_index;
   int num_wavepoints_in_trajectory = trajectory.points.size();

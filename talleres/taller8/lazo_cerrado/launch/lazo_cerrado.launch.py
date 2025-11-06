@@ -4,7 +4,6 @@ from launch_ros.actions import Node
 
 def generate_launch_description():
     return LaunchDescription([
-
         Node(
             package="modelo_diferencial",
             executable="pioneer_odometry_node",
@@ -13,6 +12,7 @@ def generate_launch_description():
             parameters=[{'use_sim_time': True}]
         ),
 
+        #------------------------------
         ## FIXED GOAL
         Node(
             package="lazo_cerrado",
@@ -21,7 +21,7 @@ def generate_launch_description():
             output="screen",
             parameters=[
                 {'use_sim_time': True},
-                {"goal_selection": "FIXED_GOAL"}, #FIXED_GOAL, TIME_BASED, PURSUIT_BASED
+                {"goal_selection": "FIXED_GOAL"}, 
                 {"fixed_goal_x": float(2.0)},
                 {"fixed_goal_y": float(2.0)},
                 {"fixed_goal_a": float(-0.785)}, # -1/2 * PI
@@ -39,7 +39,21 @@ def generate_launch_description():
         #         {"goal_selection": "TIME_BASED"}, 
         #     ],
         # ),
+    
+        ## PERSUIT BASED
+        # Node(
+        #     package="lazo_cerrado",
+        #     executable="trajectory_follower_cl",
+        #     name="trajectory_follower_cl",
+        #     output="screen",
+        #     parameters=[
+        #         {'use_sim_time': True},
+        #         {"goal_selection": "PERSUIT_BASED"}, 
+        #     ],
+        # ),
 
+
+        #------------------------------
         Node(
             package="lazo_abierto",
             executable="trajectory_generator",
@@ -61,6 +75,7 @@ def generate_launch_description():
                 ]}
             ],  
         ),
+
 	# Note: each waypoint must have 4 values: time(sec), position_x(m), position_y(m), orientation(rad)
         Node(
             package="lazo_cerrado",
