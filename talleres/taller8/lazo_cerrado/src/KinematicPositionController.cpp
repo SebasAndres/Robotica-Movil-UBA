@@ -78,14 +78,15 @@ bool KinematicPositionController::control(
    *  RECORDAR: cambiar el marco de referencia en que se encuentran dx, dy y theta */
 
   // Marco de referencia robot
-  double dx = goal_x - current_x;
-  double dy = goal_y - current_y;
+  double dx_0 = goal_x - current_x;
+  double dy_0 = goal_y - current_y;
   double theta = goal_a - current_a;
+  double theta_I = current_a - goal_a;
 
   // Marco de referencia inercial
-  double theta_I = -theta;
-  dx = cos(theta_I)*dx + sin(theta_I)*dy;
-  dy = -sin(theta_I)*dx + cos(theta_I)*dy;
+  //double theta_I = angles::normalize_angle(-theta);
+  double dx = cos(goal_a)*dx_0 + sin(goal_a)*dy_0;
+  double dy = -sin(goal_a)*dx_0 + cos(goal_a)*dy_0;
 
   // Computar variables del sistema de control
   double rho = sqrt(pow(dx,2)+pow(dy,2));
@@ -93,7 +94,7 @@ bool KinematicPositionController::control(
     atan2(dy, dx) - theta_I
   ); // Normalizes the angle to be -M_PI circle to +M_PI circle It takes and returns radians. 
   double beta =  angles::normalize_angle(
-    - theta_I - alpha
+    -theta_I - alpha
   ); // Realizar el calculo dentro del metodo de normalizacion
 
   /* dx
@@ -102,6 +103,11 @@ bool KinematicPositionController::control(
    * K_RHO, K_ALPHA, K_BETA */
   v = K_RHO * rho;
   w = K_ALPHA * alpha + K_BETA * beta;  
+
+  if (rho < 0.5){
+    v = 0;
+    w = 0.5 * theta;
+  }
 
   RCLCPP_INFO(
     this->get_logger(), "atan2: %.2f, theta siegwart: %.2f, expected_atheta: %.2f, rho: %.2f, alpha: %.2f, beta: %.2f, v: %.2f, w: %.2f",
