@@ -38,25 +38,40 @@ void robmovil_ekf::LandmarkDetector::on_laser_scan(const sensor_msgs::msg::Laser
     return;
   }
 
-  /* COMPLETAR: Convertir range,bearing a puntos cartesianos x,y,0. (ojo: descarta puntos en el "infinito")
-   * Descartando aquellas mediciones por fuera de los rangos validos */
+  /* COMPLETAR: 
+   * Convertir range, bearing a puntos cartesianos x,y,0. (ojo: descarta puntos en el "infinito")
+   * Descartando aquellas mediciones por fuera de los rangos validos 
+  */
   std::vector<tf2::Vector3> cartesian;
   
-  for (int i = 0; i < msg->ranges.size(); i++)
+  int n = msg->ranges.size();
+  for (int i = 0; i < n; i++)
   {
     /* Utilizar la informacion del mensaje para filtrar y convertir */
     float range = msg->ranges[i];
     float range_min = msg->range_min;
     float range_max = msg->range_max;
-    
     float angle_min = msg->angle_min;
     float angle_increment = msg->angle_increment;
-
-    /* COMPLETAR: p debe definirse con informacion valida y 
-     * en coordenadas cartesianas */
-    tf2::Vector3 p(0,0,0);
     
-    /* convierto el punto en relacion al marco de referencia del laser al marco del robot */
+    // Completar
+    if (!std::isfinite(range) || range < range_min || range > range_max)
+      continue;
+  
+    float angle_max = angle_min + n*angle_increment;
+    float angle_increment = (angle_max-angle_min)/n;       
+    float angle = angle_min + i*angle_increment;
+    
+    tf2::Vector3 p(
+        range * std::cos(angle),
+        range * std::sin(angle),
+        0.0f
+    );
+    
+    /* 
+    Convierto el punto en relacion al marco de referencia del 
+    laser al marco del robot 
+    */
     p = laser_transform * p;
     cartesian.push_back(p);
   }
@@ -74,8 +89,7 @@ void robmovil_ekf::LandmarkDetector::on_laser_scan(const sensor_msgs::msg::Laser
   std::vector<tf2::Vector3> centroids;
   
   for (int i = 0; i < cartesian.size(); i++)
-  {
-    
+  {    
     /* COMPLETAR: Acumular, de manera secuencial, mediciones cercanas (distancia euclidea) */
     
     // -------
