@@ -55,13 +55,12 @@ void robmovil_ekf::LandmarkDetector::on_laser_scan(const sensor_msgs::msg::Laser
     float angle_increment = msg->angle_increment;
     
     // Completar
-    if (!std::isfinite(range) || range < range_min || range > range_max)
+    if (range < range_min || range > range_max)
       continue;
   
     float angle_max = angle_min + n*angle_increment;
-    float angle_increment = (angle_max-angle_min)/n;       
-    float angle = angle_min + i*angle_increment;
-    
+    float angle = angle_min + i*(angle_max-angle_min)/n;
+
     tf2::Vector3 p(
         range * std::cos(angle),
         range * std::sin(angle),
