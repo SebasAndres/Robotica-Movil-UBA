@@ -32,7 +32,6 @@ void robmovil_ekf::IMUCalibrator::calculate_bias(){
   is_calibrating_ = false;
   
   // COMPLETAR: Deben calcular el bias de las mediciones acumuladas durante el tiempo de calibracion
-
   bias_ = tf2::Vector3(0,0,0);
   int n = calibration_data_.size();
 
