@@ -67,7 +67,7 @@ start(){
   NETWORK_DEVICE_ACCESS="--net=host --device=/dev/dri:/dev/dri"
 
   run "docker run --rm --name ros2_robotica --shm-size=256m \
-    -v /home/juan/Desktop/Facultad/2C2025/Robotica-Movil-UBA/talleres:/root/ros2_ws/src/robotica \
+    -v /home/sebastian/uba/Robotica-Movil-UBA/talleres:/root/ros2_ws/src/robotica \
     ${NETWORK_DEVICE_ACCESS} \
     ${X_VARS} \
     ${WAYLAND_VARS} \
