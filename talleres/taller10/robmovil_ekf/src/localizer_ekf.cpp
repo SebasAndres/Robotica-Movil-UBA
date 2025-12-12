@@ -87,34 +87,32 @@ void robmovil_ekf::LocalizerEKF::makeBaseA(void)
   A(3,3) = 1;
 }
 
-/** Jacobiano de A con respecto del estado (f)
- *  La matriz se actualiza en cada ciclo de actualizacion de tiempo (prediccion) */
 void robmovil_ekf::LocalizerEKF::makeA(void)
 {
-  /* COMPLETAR: Utilizando variables globales x, u y delta_t */
-  A(1,3) = -sin(theta_0) * v_0 * delta_t;
-  A(2,3) = cos(theta_0) * v_0 * delta_t;
+  double theta = x(3);  // orientacion actual del robot
+  double v = u(1);      // velocidad lineal
 
-  RCLCPP_INFO(rclcpp::get_logger("robmovil_ekf"), "A: %d", A);
+  // Derivadas parciales respecto a theta (las unicas no constantes)
+  A(1,3) = -v * delta_t * sin(theta);  // d(x_t)/d(theta)
+  A(2,3) =  v * delta_t * cos(theta);  // d(y_t)/d(theta)
+
+  RCLCPP_INFO(rclcpp::get_logger("robmovil_ekf"), "A: [ [%f, %f, %f], [%f, %f, %f], [%f, %f, %f] ]",
+              A(1,1), A(1,2), A(1,3), A(2,1), A(2,2), A(2,3), A(3,1), A(3,2), A(3,3));
 }
 
 
-/** Jacobiano de W respecto de f */
 void robmovil_ekf::LocalizerEKF::makeBaseW(void)
 {
-  /* COMPLETAR: Con las derivadas del modelo de movimiento (o proceso) con respecto al ruido ADITIVO w */
-  
-  W(1,1) = 0;
+  // Para ruido aditivo, W es la matriz identidad
+  W(1,1) = 1;
   W(1,2) = 0;
   W(1,3) = 0;
   W(2,1) = 0;
-  W(2,2) = 0;
+  W(2,2) = 1;
   W(2,3) = 0;
   W(3,1) = 0;
   W(3,2) = 0;
-  W(3,3) = 0;
-
-
+  W(3,3) = 1;
 }
 
 /** covarianza de W (ruido en f) */
@@ -165,12 +163,17 @@ void robmovil_ekf::LocalizerEKF::makeH(void)
     RCLCPP_INFO(rclcpp::get_logger("robmovil_ekf"), "Landmark too close to robot! Fake H used");
   } else {
     
-    /* COMPLETAR: Calcular H en base al landmark del mapa relativo al robot */
-    
-    H(1,1) = 0;
-    H(1,2) = 0;
-    H(2,1) = 0;
-    H(2,2) = 0;
+    /* COMPLETAR: Calcular H en base al landmark del mapa relativo al robot */    
+
+    float _x = diff_robot_landmark.getX();
+    float _y = diff_robot_landmark.getY();
+
+    H(1,1) = -_x / diff_robot_landmark.length();
+    H(1,2) = -_y / diff_robot_landmark.length();
+    H(2,1) = _y / diff_robot_landmark.length2();
+    H(2,2) = -_x / diff_robot_landmark.length2();
+    // H(1,3) = 0;
+    // H(2,3) = -1; 
 
   }
 
@@ -182,10 +185,10 @@ void robmovil_ekf::LocalizerEKF::makeBaseV(void)
 {
   /* COMPLETAR: Con las derivadas del modelo de sensado con respecto al ruido ADITIVO v */
   
-  V(1,1) = 0;
+  V(1,1) = 1;
   V(1,2) = 0;
   V(2,1) = 0;
-  V(2,2) = 0;
+  V(2,2) = 1;
   
   RCLCPP_INFO(rclcpp::get_logger("robmovil_ekf"), "V: %d", V);
 }
@@ -201,24 +204,34 @@ void robmovil_ekf::LocalizerEKF::makeBaseR()
   RCLCPP_INFO(rclcpp::get_logger("robmovil_ekf"), "R: %d", R);
 }
 
+
 /** Modelo de movimiento o proceso: x_t = f(x_t-1, u_t-1).
- *  
- *  Se debe utilizar el estado anterior y la entrada del modelo de movimiento
- *  para definir (predecir) la variable x */
+ *  Modelo cinematico del robot diferencial:
+ *    x_t     = x_{t-1}     + v * dt * cos(theta_{t-1})
+ *    y_t     = y_{t-1}     + v * dt * sin(theta_{t-1})
+ *    theta_t = theta_{t-1} + omega * dt
+ */
 void robmovil_ekf::LocalizerEKF::makeProcess(void)
 {
-  /* COMPLETAR: Utilizar las variables globales x_t-1, u y delta_t 
-   * para predecir el estado siguiente (prior state estimate).
-   * 
-   * Guardar el resultado en la variable global x */
-   LocalizerEKF::Vector x_old(x); // X_t-1
+  // Guardo estado anterior
+  double x_old = x(1);
+  double y_old = x(2);
+  double theta_old = x(3);
 
-   x(1) =  + v * delta_t * cos();
-  x(2) = 0;
-  x(3) = angles::normalize_angle(0);
-   
+  // Entradas de control
+  double v = u(1);      // velocidad lineal
+  double omega = u(2);  // velocidad angular
 
-  RCLCPP_INFO(rclcpp::get_logger("robmovil_ekf"), "Process model: X_t-1: %d, X_t: %d, delta_t: %d", x_old, x, delta_t);
+  // x' = f(x)
+  x(1) = x_old + v * delta_t * cos(theta_old);
+  x(2) = y_old + v * delta_t * sin(theta_old);
+  x(3) = angles::normalize_angle(theta_old + omega * delta_t);
+
+  RCLCPP_INFO(
+    rclcpp::get_logger("robmovil_ekf"),
+    "Process model: x_old=(%.3f, %.3f, %.3f), u=(v=%.3f, w=%.3f), dt=%.3f -> x_new=(%.3f, %.3f, %.3f)",
+    x_old, y_old, theta_old, v, omega, delta_t, x(1), x(2), x(3)
+  );
 }
 
 /** Modelo de sensado: z_t = h(x_t).
@@ -227,8 +240,7 @@ void robmovil_ekf::LocalizerEKF::makeProcess(void)
  *  para definir la variable z con lo que deberia haber medido el sensor */
 void robmovil_ekf::LocalizerEKF::makeMeasure(void)
 {
-  z = landmark2measure(correspondence_landmark);
-  
+  z = landmark2measure(correspondence_landmark); 
   RCLCPP_INFO(rclcpp::get_logger("robmovil_ekf"), "Expected measure: %d", z);
 }
 
@@ -237,7 +249,11 @@ void robmovil_ekf::LocalizerEKF::makeMeasure(void)
  *  
  *  NOTA: El landmark perteneciente al mapa al cual hace referencia el landmark medido debe ser devuelto
  *        por la referencia corresponding_landmark */
-bool robmovil_ekf::LocalizerEKF::find_corresponding_landmark(const tf2::Vector3& measured_landmark, tf2::Vector3& corresponding_landmark, float delta_radio)
+bool robmovil_ekf::LocalizerEKF::find_corresponding_landmark(
+  const tf2::Vector3& measured_landmark, 
+  tf2::Vector3& corresponding_landmark, 
+  float delta_radio
+)
 {
   /* COMPLETAR: Encontrar el landmark del mapa dentro del radio (delta_radio), mas cercano
    * a measured_landmark.
@@ -245,15 +261,21 @@ bool robmovil_ekf::LocalizerEKF::find_corresponding_landmark(const tf2::Vector3&
    * El resultado debe devolverse por la referencia corresponding_landmark */
   
   bool found = false;
+  float min_distance = std::numeric_limits<float>::max();   
+  
+  float distance;
+  tf2::Vector3 auxiliary_landmark;
 
-  float min_distance = std::numeric_limits<float>::max();
-   
   for (int i = 0; i < map_landmarks.size(); i++)
   {
-    /* COMPLETAR */
-    corresponding_landmark = map_landmarks[i];
-    found = false;
-    
+    auxiliary_landmark = map_landmarks[i];
+
+    distance = (measured_landmark - auxiliary_landmark).length();
+    if (distance < delta_radio && distance < min_distance){
+      min_distance = distance;
+      corresponding_landmark = auxiliary_landmark;
+      found = true;
+    }
   }
 
   return found;
@@ -291,7 +313,6 @@ tf2::Vector3 robmovil_ekf::LocalizerEKF::measure2landmark(const LocalizerEKF::Ve
   /* take robot absolute position into account */
   predicted_landmark = predicted_landmark + tf2::Vector3(robot_x, robot_y, 0);
 
-
   return predicted_landmark;
 }
 
@@ -305,7 +326,8 @@ robmovil_ekf::LocalizerEKF::Vector robmovil_ekf::LocalizerEKF::landmark2measure(
    * 
    * NOTA: Para esto se "traduce" la posicion del landmark en respecto
    *       del robot. CONSIDERAR la inversa de la transformacion que va desde el marco
-   *       del mundo al marco del robot ( transform_world_robot.inverse() ) */  
+   *       del mundo al marco del robot ( transform_world_robot.inverse() ) 
+   */  
   
   RCLCPP_INFO(rclcpp::get_logger("robmovil_ekf"), "Robot pose: %f  %f  %f", x(1), x(2), x(3));
   
@@ -324,7 +346,6 @@ robmovil_ekf::LocalizerEKF::Vector robmovil_ekf::LocalizerEKF::landmark2measure(
 
   relative_landmark.normalize();
   measure(2) = angles::normalize_angle(atan2(relative_landmark.getY(), relative_landmark.getX())); // Calculo del phi
-
 
   return measure;
 }

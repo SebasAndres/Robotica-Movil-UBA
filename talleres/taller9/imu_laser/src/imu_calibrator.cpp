@@ -50,7 +50,7 @@ void robmovil_ekf::IMUCalibrator::on_imu_measurement(const sensor_msgs::msg::Imu
   
   // delta de tiempo entre mediciones
   rclcpp::Time current_time(msg.header.stamp);
-  double delta_t;
+  double delta_t = 0.0;  // Inicializar a 0 para la primera medición
   if (time_last_measure_.nanoseconds() > 0) {
     delta_t = (current_time - time_last_measure_).seconds();
   }
@@ -71,15 +71,15 @@ void robmovil_ekf::IMUCalibrator::on_imu_measurement(const sensor_msgs::msg::Imu
     imu_calib_msg = msg;
     
     // COMPLETAR: Corregir la velocidad angular recibida utilizando el bias calculado
-    tf2::Vector3 vel_sin_bias = tf2::Vector3(0,0,0);
-    vel_sin_bias = delta_t*(angular_velocity - bias_);
+    tf2::Vector3 vel_sin_bias = angular_velocity - bias_;
 
     RCLCPP_INFO(this->get_logger(), "Bias: vel_x: %f , vel_y: %f , vel_z: %f", angular_velocity.getX(), angular_velocity.getY(), angular_velocity.getZ());
     RCLCPP_INFO(this->get_logger(), "Sin Bias: vel_x: %f , vel_y: %f , vel_z: %f", vel_sin_bias.getX(), vel_sin_bias.getY(), vel_sin_bias.getZ());
-    
+
     // COMPLETAR: Integrar la velocidad angular corregida durante un intervalo de tiempo
+    // (velocidad angular * tiempo = angulo)
     tf2::Quaternion delta_q;
-    delta_q.setRPY(0, 0, vel_sin_bias.getZ());
+    delta_q.setRPY(0, 0, vel_sin_bias.getZ() * delta_t);
     orientacion_estimada_ *= delta_q;
     orientacion_estimada_.normalize();
     

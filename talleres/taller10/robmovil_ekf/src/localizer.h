@@ -39,7 +39,7 @@ namespace robmovil_ekf {
       void prediction_event();
       void advance_time(const rclcpp::Time& now);
       void publish_estimate(const rclcpp::Time& now);
-      
+        
       void prediction(const rclcpp::Time& time);
       
       /* ultimo comando de control recibido */

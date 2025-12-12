@@ -51,30 +51,23 @@ void robmovil_ekf::LandmarkDetector::on_laser_scan(const sensor_msgs::msg::Laser
   int n = msg->ranges.size();
   for (int i = 0; i < n; i++)
   {
-    /* Utilizar la informacion del mensaje para filtrar y convertir */
     float range = msg->ranges[i];
-    float range_min = msg->range_min;
-    float range_max = msg->range_max;
-    float angle_min = msg->angle_min;
-    float angle_increment = msg->angle_increment;
     
-    // Completar
-    if (range < range_min || range > range_max)
+    // Filtro mediciones inválidas
+    if (range < msg->range_min || range > msg->range_max || range < 0.1)
       continue;
-  
-    float angle_max = angle_min + n*angle_increment;
-    float angle = angle_min + i*(angle_max-angle_min)/n;
 
+    // Calculo el ángulo correspondiente a este rayo
+    float angle = msg->angle_min + i * msg->angle_increment;
+
+    // Convierto de polares a cartesianas
     tf2::Vector3 p(
         range * std::cos(angle),
         range * std::sin(angle),
         0.0f
     );
-    
-    /* 
-    Convierto el punto en relacion al marco de referencia del 
-    laser al marco del robot 
-    */
+
+    // Convierto el marco del laser al marco del robot
     p = laser_transform * p;
     cartesian.push_back(p);
   }
@@ -91,45 +84,38 @@ void robmovil_ekf::LandmarkDetector::on_laser_scan(const sensor_msgs::msg::Laser
   // centroides estimados de los postes en coordenadas cartesianas
   std::vector<tf2::Vector3> centroids;
   
-  float agrupacion_threshold = 0.1; 
-  for (int i = 0; i < cartesian.size(); i++)
-  {    
-    // Para cada punto actual p_i, buscamos y agrupamos aquellos que estén cerca
-    // (por debajo de un umbral).
+  float agrupacion_threshold = LANDMARK_DIAMETER;
+  size_t i = 0;
+  while (i < cartesian.size())
+  {
+    // Grupo del punto actual
+    landmark_points.clear();
+    landmark_points.push_back(cartesian[i]);
 
-    // Si el punto actual ya fue procesado (ya está en centroides), lo skippeo.
-    if (i < cartesian.size()){
-      for (int j = 0; j < cartesian.size(); j++) {
-        if (j != i && dist(cartesian[i], cartesian[j]) < agrupacion_threshold) {
-          landmark_points.push_back(cartesian[j]);
-        }
-        else {
-          i = j;
-          break;
-        }
-      }
+    // Agrupo puntos consecutivos que esten cerca del anterior
+    size_t j = i + 1;
+    while (j < cartesian.size() && dist(cartesian[j-1], cartesian[j]) < agrupacion_threshold) {
+      landmark_points.push_back(cartesian[j]);
+      j++;
     }
-    
-    /* 
-    Al terminarse las mediciones provenientes al landmark que se venia detectando,
-    se calcula la pose del landmark como el centroide de las mediciones 
-    */
+
+    // Avanzo i al siguiente grupo
+    i = j;
+
+    // Filtro grupos chicos (ruido) - un poste debería tener varios puntos
+    if (landmark_points.size() < 2) {
+      continue;
+    }
+
     RCLCPP_INFO(this->get_logger(), "landmark con %zu puntos", landmark_points.size());
 
     /* COMPLETAR: calcular el centroide de los puntos acumulados */
-    // El centroide es el mínimo en distancia de los vectores en landmark
-    tf2::Vector3 centroid(0,0,0);
-    tf2::Vector3 origen(0,0,0); 
-    double min_total_dist = std::numeric_limits<double>::max();
-    int min_idx = 0;
-    for (size_t cidx = 0; cidx < landmark_points.size(); ++cidx) {
-      double total_dist = dist(landmark_points[cidx], origen);
-      if (total_dist < min_total_dist) {
-        min_total_dist = total_dist;
-        min_idx = cidx;
-      }
+    // El centroide es el promedio de las posiciones de los puntos
+    tf2::Vector3 centroid(0, 0, 0);
+    for (const auto& p : landmark_points) {
+      centroid += p;
     }
-    centroid = landmark_points[min_idx];
+    centroid /= static_cast<double>(landmark_points.size());
     
     RCLCPP_INFO(this->get_logger(), "landmark detectado (cartesianas): %f %f %f", centroid.getX(), centroid.getY(), centroid.getZ());
     centroids.push_back(centroid);
@@ -149,10 +135,7 @@ void robmovil_ekf::LandmarkDetector::on_laser_scan(const sensor_msgs::msg::Laser
 
     /* se agrega el landmark en coordenadas polares */
     landmark_array.landmarks.push_back(landmark);
-    RCLCPP_INFO(this->get_logger(), "landmark detectado (polares):  %u: %f %f ", i, landmark.range, landmark.bearing);
-
-    /* empiezo a procesar un nuevo landmark */
-    landmark_points.clear();
+    RCLCPP_INFO(this->get_logger(), "landmark detectado (polares): %f %f", landmark.range, landmark.bearing);
   }
 
   /* Publicamos el mensaje de los landmarks encontrados */

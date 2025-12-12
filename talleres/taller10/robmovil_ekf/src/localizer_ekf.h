@@ -59,6 +59,7 @@ namespace robmovil_ekf
       void set_map(const std::vector<Vector>& observations);
       void set_delta_t(double delta); // seconds
       bool set_measure(const Vector& measured_z);
+      void get_delta_t();
 
     private:
     
